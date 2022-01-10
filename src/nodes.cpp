@@ -1,8 +1,18 @@
 //
 // Created by peter on 19.12.2021.
 //
+//Członkowie grupy:
+//(1) Piotr Wolnik, 403077
+//(2) Kamil Kosakowski, 405035
+//(3) Mikołaj Kapera, 405208
+//
+//Kierownik grupy: Piotr Wolnik
+//
+//URL repozytorium: https://github.com/PiotrWolnik/NetSim.git
 
 #include "nodes.hpp"
+
+#include <utility>
 
 ReceiverPreferences::const_iterator ReceiverPreferences::begin() const {
     return preferences.begin();
@@ -24,6 +34,97 @@ void Worker::receive_package(Package&& p) {
     PackageSender::push_package(std::move(p));
 }
 
+void Worker::do_work(Time t) {
+    t_ = t;
+}
+
 void Storehouse::receive_package(Package&& p) {
     storehouse_->push(std::move(p));
 }
+
+ReceiverPreferences::ReceiverPreferences(ProbabilityGenerator pg) : pg_(pg) {
+    preferences = preferences_t();
+}
+
+void ReceiverPreferences::remove_receiver(IPackageReceiver* ptr) {
+    auto it = std::find_if(preferences.begin(), preferences.end(),
+                           [&ptr](auto & elem){ return ptr == elem.first; });
+    if (it != preferences.end()) {
+        preferences.extract(it->first);
+        for (auto & elem : preferences) {
+            elem.second = double(1)/double(preferences.size());
+        }
+    }
+}
+
+void ReceiverPreferences::add_receiver(IPackageReceiver* ptr) {
+    auto it = std::find_if(preferences.begin(), preferences.end(),
+                           [&ptr](auto &elem) { return elem.first == ptr; });
+    if (it == preferences.end()) {
+        if (preferences.size() > 0) {
+            preferences.emplace(ptr, 1/preferences.size());
+            for (auto & elem : preferences) {
+                elem.second = double(1)/double(preferences.size());
+            }
+        }
+        else {
+            preferences.emplace(ptr, 1);
+        }
+
+    }
+}
+
+
+IPackageReceiver* ReceiverPreferences::choose_receiver() {
+    std::vector<double> probability_vals;
+    for (auto & elem : preferences) {
+        if (probability_vals.size() > 0)
+            probability_vals.push_back(elem.second + probability_vals[probability_vals.size()-1]);
+        probability_vals.push_back(0.0);
+    }
+    double probability = pg_();
+
+    std::size_t i = 0;
+    IPackageReceiver* ptr = preferences.begin()->first;
+    for (auto iter = preferences.begin(); iter != preferences.end(); ++iter, ++i) {
+        if (probability < probability_vals[i])
+            continue;
+        else {
+            ptr = iter->first;
+            break;
+        }
+    }
+    remove_receiver(ptr);
+    return ptr;
+}
+
+void PackageSender::push_package(Package&& package) {
+    if (buffer_.has_value() == 0)
+        buffer_.emplace(std::move(package));
+}
+
+void PackageSender::send_package() {
+    if (!receiver_preferences_.get_preferences().empty()) {
+        if (buffer_) {
+            auto receiver = receiver_preferences_.choose_receiver();
+            receiver->receive_package(std::move(buffer_.value()));
+            buffer_.reset();
+        }
+    }
+}
+
+void Ramp::deliver_goods(Time t) {
+    t_ = t;
+    if(t % di_ == 1){
+        push_package(Package());
+    }
+}
+
+//Członkowie grupy:
+//(1) Piotr Wolnik, 403077
+//(2) Kamil Kosakowski, 405035
+//(3) Mikołaj Kapera, 405208
+//
+//Kierownik grupy: Piotr Wolnik
+//
+//URL repozytorium: https://github.com/PiotrWolnik/NetSim.git
