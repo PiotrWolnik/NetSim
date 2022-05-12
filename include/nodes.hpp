@@ -1,13 +1,7 @@
 //
 // Created by peter on 19.12.2021.
 //
-//Członkowie grupy:
-//(1) Piotr Wolnik, 403077
-//(2) Kamil Kosakowski, 405035
-//(3) Mikołaj Kapera, 405208
-//
-//Kierownik grupy: Piotr Wolnik
-//
+
 //URL repozytorium: https://github.com/PiotrWolnik/NetSim.git
 #ifndef SIECI_NODES_HPP
 #define SIECI_NODES_HPP
@@ -143,11 +137,5 @@ private:
 };
 
 #endif //SIECI_NODES_HPP
-//Członkowie grupy:
-//(1) Piotr Wolnik, 403077
-//(2) Kamil Kosakowski, 405035
-//(3) Mikołaj Kapera, 405208
-//
-//Kierownik grupy: Piotr Wolnik
-//
+
 //URL repozytorium: https://github.com/PiotrWolnik/NetSim.git
