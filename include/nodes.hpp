@@ -35,7 +35,6 @@ public:
     #if (defined EXERCISE_ID && EXERCISE_ID != EXERCISE_ID_NODES)
         [[nodiscard]] virtual ReceiverType get_receiver_type() const = 0;
     #endif
-    //virtual ReceiverType get_receiver_type() = 0;
     virtual ~IPackageReceiver() = default;
     [[nodiscard]] virtual IPackageStockpile::const_iterator cbegin() const = 0;
     [[nodiscard]] virtual IPackageStockpile::const_iterator cend() const = 0;
@@ -52,6 +51,8 @@ public:
     // Klasa Worker realizuje interfejs IPackageReceiver dlatego należy przeciążyć metody tej klasy
     void receive_package(Package && p) override;
     [[nodiscard]] ElementID get_id() const override { return ID_; }
+    // Mozliwe do usuniecia
+    [[nodiscard]] IPackageQueue * get_queue() const { return dynamic_cast<IPackageQueue*>(storehouse_.get()); }
     #if (defined EXERCISE_ID && EXERCISE_ID != EXERCISE_ID_NODES)
         [[nodiscard]] ReceiverType get_receiver_type() const override { return ReceiverType::STOREHOUSE; }
     #endif
@@ -91,7 +92,7 @@ public:
     PackageSender& operator=(PackageSender && packageSender) = default;
     virtual ~PackageSender() = default;
     void send_package();
-    std::optional<Package> & get_sending_buffer() { return buffer_; }
+    [[nodiscard]] std::optional<Package> & get_sending_buffer() const { return (std::optional<Package> &) std::move(buffer_); }
     ReceiverPreferences receiver_preferences_;
 protected:
     virtual void push_package(Package&& package);
@@ -106,7 +107,7 @@ public:
     Ramp & operator=(Ramp && ramp) = default;
     Ramp(Ramp && ramp) = default;
     void deliver_goods(Time t);
-    TimeOffset get_delivery_interval() { return di_; }
+    [[nodiscard]] TimeOffset get_delivery_interval() const { return di_; }
     [[nodiscard]] ElementID get_id() const { return ID_; }
 private:
     ElementID ID_;
@@ -119,14 +120,16 @@ class Worker : public PackageSender, public IPackageReceiver {
 public:
     explicit Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> ptr) : ID_(id), pd_(pd), t_(0), worker_ptr(std::move(ptr)) {}
     void do_work(Time t);
-    TimeOffset get_processing_duration() { return pd_; }
-    Time get_package_processing_start_time() { return t_; }
+    [[nodiscard]] TimeOffset get_processing_duration() const { return pd_; }
+    Time get_package_processing_start_time() const { return t_; }
+    [[nodiscard]] IPackageQueue * get_queue() const { return worker_ptr.get(); }
     // Klasa Worker realizuje interfejs IPackageReceiver dlatego należy przeciążyć metody tej klasy
     void receive_package(Package && p) override;
     [[nodiscard]] ElementID get_id() const override { return ID_; }
     #if (defined EXERCISE_ID && EXERCISE_ID != EXERCISE_ID_NODES)
         [[nodiscard]] ReceiverType get_receiver_type() const override { return ReceiverType ::WORKER; }
     #endif
+    [[nodiscard]] std::optional<Package> & get_processing_buffer() const { return (std::optional<Package> &) std::move(worker_buffer_); }
     [[nodiscard]] IPackageStockpile::const_iterator cbegin() const override { return worker_ptr->cbegin(); }
     [[nodiscard]] IPackageStockpile::const_iterator cend() const override { return worker_ptr->cend(); }
     [[nodiscard]] IPackageStockpile::const_iterator begin() const override { return worker_ptr->begin(); }
@@ -135,6 +138,7 @@ private:
     ElementID ID_;
     TimeOffset pd_;
     Time t_;
+    std::optional<Package> worker_buffer_;
     std::unique_ptr<IPackageQueue> worker_ptr;
 };
 
