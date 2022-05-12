@@ -1,6 +1,14 @@
 //
 // Created by peter on 19.12.2021.
 //
+//Członkowie grupy:
+//(1) Piotr Wolnik, 403077
+//(2) Kamil Kosakowski, 405035
+//(3) Mikołaj Kapera, 405208
+//
+//Kierownik grupy: Piotr Wolnik
+//
+//URL repozytorium: https://github.com/PiotrWolnik/NetSim.git
 #include "package.hpp"
 
 std::set<ElementID> Package::assigned_IDs = {};
@@ -33,4 +41,14 @@ Package & Package::operator=(Package&& package) noexcept {
 
 Package::~Package() {
     freed_IDs.insert(ID_);
+    assigned_IDs.erase(ID_);
 }
+
+//Członkowie grupy:
+//(1) Piotr Wolnik, 403077
+//(2) Kamil Kosakowski, 405035
+//(3) Mikołaj Kapera, 405208
+//
+//Kierownik grupy: Piotr Wolnik
+//
+//URL repozytorium: https://github.com/PiotrWolnik/NetSim.git

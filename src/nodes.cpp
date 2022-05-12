@@ -14,6 +14,10 @@
 
 #include <utility>
 
+void Storehouse::receive_package(Package&& p) {
+    storehouse_->push(std::move(p));
+}
+
 ReceiverPreferences::const_iterator ReceiverPreferences::begin() const {
     return preferences.begin();
 }
@@ -31,16 +35,9 @@ ReceiverPreferences::const_iterator ReceiverPreferences::cend() const {
 }
 
 void Worker::receive_package(Package&& p) {
-    PackageSender::push_package(std::move(p));
+    worker_ptr->push(std::move(p));
 }
 
-void Worker::do_work(Time t) {
-    t_ = t;
-}
-
-void Storehouse::receive_package(Package&& p) {
-    storehouse_->push(std::move(p));
-}
 
 ReceiverPreferences::ReceiverPreferences(ProbabilityGenerator pg) : pg_(pg) {
     preferences = preferences_t();
@@ -73,7 +70,6 @@ void ReceiverPreferences::add_receiver(IPackageReceiver* ptr) {
 
     }
 }
-
 
 IPackageReceiver* ReceiverPreferences::choose_receiver() {
     std::vector<double> probability_vals;
@@ -117,6 +113,25 @@ void Ramp::deliver_goods(Time t) {
     t_ = t;
     if(t % di_ == 1){
         push_package(Package());
+    }
+}
+
+void Worker::do_work(Time t) {
+    if (!worker_buffer_.has_value()) {
+        if (!worker_ptr->empty()){
+            worker_buffer_.emplace(worker_ptr->pop());
+            t_ = t;
+        }
+    }
+    if (worker_buffer_.has_value()){
+        if (t_ + pd_ -1 == t){
+            push_package( std::move(worker_buffer_.value()));
+            worker_buffer_.reset();
+            if(!worker_ptr->empty()){
+                worker_buffer_.emplace(worker_ptr->pop());
+                t_ = t;
+            }
+        }
     }
 }
 
