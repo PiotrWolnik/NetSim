@@ -1,13 +1,6 @@
 //
 // Created by peter on 19.12.2021.
-//
-//Członkowie grupy:
-//(1) Piotr Wolnik, 403077
-//(2) Kamil Kosakowski, 405035
-//(3) Mikołaj Kapera, 405208
-//
-//Kierownik grupy: Piotr Wolnik
-//
+
 //URL repozytorium: https://github.com/PiotrWolnik/NetSim.git
 
 #include "nodes.hpp"
@@ -135,11 +128,5 @@ void Worker::do_work(Time t) {
     }
 }
 
-//Członkowie grupy:
-//(1) Piotr Wolnik, 403077
-//(2) Kamil Kosakowski, 405035
-//(3) Mikołaj Kapera, 405208
-//
-//Kierownik grupy: Piotr Wolnik
-//
+
 //URL repozytorium: https://github.com/PiotrWolnik/NetSim.git
